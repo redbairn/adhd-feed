@@ -1,41 +1,35 @@
 import feedparser
 import json
 import os
-from datetime import datetime
 
-# Add your favorite ADHD RSS feeds here
 FEED_URLS = [
     "https://www.reddit.com/r/ADHD/.rss",
     "https://www.additudemag.com/feed/",
-    "https://adhddd.com/feed/",
-    "https://media.rss.com/absolutelyadhd/feed.xml"
+    "https://adhddd.com/feed/"
 ]
 
-def fetch_all():
-    combined_posts = []
+def fetch_all_feeds():
+    combined_entries = []
     
     for url in FEED_URLS:
-        print(f"Fetching: {url}")
+        print(f"Scraping: {url}")
         feed = feedparser.parse(url)
-        source_title = feed.feed.get('title', 'Unknown Source')
+        source_title = feed.feed.get("title", "Unknown Source")
         
         for entry in feed.entries:
-            # Standardize date parsed into an ISO string
-            pub_date = entry.get('published', entry.get('updated', ''))
-            
-            combined_posts.append({
-                "title": entry.get('title', 'No Title'),
-                "link": entry.get('link', '#'),
-                "summary": entry.get('summary', entry.get('description', ''))[:300] + "...",
+            raw_date = entry.get("published", entry.get("updated", ""))
+            formatted_date = raw_date if raw_date else "Recent"
+
+            combined_entries.append({
+                "title": entry.get("title", "No Title"),
+                "link": entry.get("link", "#"),
                 "source": source_title,
-                "date": pub_date
+                "date": formatted_date
             })
             
-    # Quick fallback sorting (most recent first)
-    combined_posts.sort(key=lambda x: x['date'], reverse=True)
-    
-    with open("feed.json", "w", encoding="utf-8") as f:
-        json.dump(combined_posts[:100], f, indent=2) # Keep the top 100 posts
+    with open("feed.json", "w") as f:
+        json.dump(combined_entries, f, indent=4)
+    print(f"Successfully saved {len(combined_entries)} items to feed.json")
 
 if __name__ == "__main__":
-    fetch_all()
+    fetch_all_feeds()
