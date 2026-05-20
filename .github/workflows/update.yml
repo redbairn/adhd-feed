@@ -5,6 +5,9 @@ on:
     - cron: '0 * * * *' # Runs every hour
   workflow_dispatch: # Allows you to force run it manually
 
+  permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-24.04-arm
