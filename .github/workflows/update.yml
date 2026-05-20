@@ -2,33 +2,14 @@ name: Update ADHD Feed
 
 on:
   schedule:
-    - cron: '0 * * * *' # Runs every hour
-  workflow_dispatch: # Allows you to force run it manually
-
-permissions:
-  contents: write
+    - cron: '0 * * * *' # Triggers automatically every hour
+  workflow_dispatch: # Allows you to manually click "Run workflow"
 
 jobs:
-  build:
-    runs-on: ubuntu-24.04-arm
+  ping-pi:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v6 # 🌟 Upgraded to v6
-  
-    - name: Set up Python
-      uses: actions/setup-python@v6 # 🌟 Upgraded to v6
-      with:
-        python-version: '3.x'
-
-    - name: Install Dependencies
-      run: pip install feedparser
-
-    - name: Run Aggregator
-      run: python fetch_feeds.py
-
-    - name: Commit and Push if changed
-      run: |
-        git config --global user.name "GitHub Action"
-        git config --global user.email "actions@github.com"
-        git add feed.json
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Automated feed update" && git push)
+      # This step does absolutely nothing except print a message to the logs.
+      # Its real purpose is just existing so your Pi Python script detects a "queued" run!
+      - name: Alerting Raspberry Pi 5 Hardware
+        run: echo "Ping sent! The physical Pi 5 custom runner will now take over execution."
