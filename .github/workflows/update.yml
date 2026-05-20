@@ -1,0 +1,31 @@
+name: Update ADHD Feed
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs every hour
+  workflow_dispatch: # Allows you to force run it manually
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Install Dependencies
+      run: pip install feedparser
+
+    - name: Run Aggregator
+      run: python fetch_feeds.py
+
+    - name: Commit and Push if changed
+      run: |
+        git config --global user.name "GitHub Action"
+        git config --global user.email "actions@github.com"
+        git add feed.json
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Automated feed update" && git push)

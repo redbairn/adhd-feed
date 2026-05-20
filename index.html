@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADHD Stream</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🧠 ADHD Focus Stream</h1>
+        <p>A unified timeline of ADHD strategies, discussions, and news.</p>
+    </header>
+
+    <main id="feed-container">
+        <p class="loading">Loading your stream...</p>
+    </main>
+
+    <script>
+        async function loadFeed() {
+            try {
+                // Fetch our automatically generated JSON file
+                const response = await fetch('feed.json');
+                const posts = await response.json();
+                const container = document.getElementById('feed-container');
+                container.innerHTML = '';
+
+                posts.forEach(post => {
+                    const card = document.createElement('article');
+                    card.className = 'post-card';
+                    card.innerHTML = `
+                        <span class="post-source">${post.source}</span>
+                        <h2><a href="${post.link}" target="_blank">${post.title}</a></h2>
+                        <p>${post.summary}</p>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                document.getElementById('feed-container').innerHTML = `<p>Error loading content.</p>`;
+            }
+        }
+        loadFeed();
+    </script>
+</body>
+</html>
