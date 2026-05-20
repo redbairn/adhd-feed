@@ -3,43 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADHD Stream</title>
+    <title>ADHD Focus Feed</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>🧠 ADHD Focus Stream</h1>
-        <p>A unified timeline of ADHD strategies, discussions, and news.</p>
-    </header>
 
-    <main id="feed-container">
-        <p class="loading">Loading your stream...</p>
-    </main>
+<div class="container">
+    <h1>🧠 ADHD Focus Stream</h1>
+    
+    <div class="toolbar">
+        <input type="text" id="searchBar" class="search-bar" placeholder="Search articles...">
+        <select id="filterDropdown" class="filter-dropdown">
+            <option value="all">All Sources</option>
+        </select>
+    </div>
 
-    <script>
-        async function loadFeed() {
-            try {
-                // Fetch our automatically generated JSON file
-                const response = await fetch('feed.json');
-                const posts = await response.json();
-                const container = document.getElementById('feed-container');
-                container.innerHTML = '';
+    <div id="feed" class="feed-container">Loading latest updates...</div>
+</div>
 
-                posts.forEach(post => {
-                    const card = document.createElement('article');
-                    card.className = 'post-card';
-                    card.innerHTML = `
-                        <span class="post-source">${post.source}</span>
-                        <h2><a href="${post.link}" target="_blank">${post.title}</a></h2>
-                        <p>${post.summary}</p>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (err) {
-                document.getElementById('feed-container').innerHTML = `<p>Error loading content.</p>`;
-            }
+<script>
+    let allArticles = [];
+
+    async function initFeed() {
+        try {
+            const response = await fetch('feed.json');
+            allArticles = await response.json();
+            
+            populateFilterOptions(allArticles);
+            renderArticles(allArticles);
+            
+            document.getElementById('searchBar').addEventListener('input', filterFeed);
+            document.getElementById('filterDropdown').addEventListener('change', filterFeed);
+        } catch (err) {
+            document.getElementById('feed').innerText = "Failed to load feed data.";
         }
-        loadFeed();
-    </script>
+    }
+
+    function populateFilterOptions(articles) {
+        const dropdown = document.getElementById('filterDropdown');
+        const sources = [...new Set(articles.map(a => a.source))];
+        
+        sources.forEach(source => {
+            const opt = document.createElement('option');
+            opt.value = source;
+            opt.textContent = source;
+            dropdown.appendChild(opt);
+        });
+    }
+
+    function renderArticles(articles) {
+        const container = document.getElementById('feed');
+        container.innerHTML = '';
+        
+        if(articles.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#666;">No matching articles found.</div>';
+            return;
+        }
+
+        articles.forEach(item => {
+            const card = document.createElement('a');
+            card.className = 'card';
+            card.href = item.link;
+            card.target = '_blank';
+            
+            card.innerHTML = `
+                <h3>${item.title}</h3>
+                <div class="meta-container">
+                    <span class="source-badge">${item.source}</span>
+                    <span class="date-badge">🕒 ${item.date}</span>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function filterFeed() {
+        const searchInput = document.getElementById('searchBar').value.toLowerCase();
+        const selectedSource = document.getElementById('filterDropdown').value;
+        
+        const filtered = allArticles.filter(article => {
+            const matchesSearch = article.title.toLowerCase().includes(searchInput);
+            const matchesSource = (selectedSource === 'all' || article.source === selectedSource);
+            return matchesSearch && matchesSource;
+        });
+        
+        renderArticles(filtered);
+    }
+
+    initFeed();
+</script>
 </body>
 </html>
